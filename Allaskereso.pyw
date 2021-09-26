@@ -33,7 +33,7 @@ class Allaskereso(QMainWindow):
         self.setWindowIcon(QIcon(QPixmap(app_icon())))
 
         # The version of the program
-        self.version = "v1.22"
+        self.version = "v1.23"
 
         # The title of the program
         self.setWindowTitle(f"Álláskereső {self.version}")

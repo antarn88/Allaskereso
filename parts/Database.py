@@ -2,7 +2,7 @@ from sqlite3 import connect
 
 
 class Database:
-    def __init__(self, jobs=None, location=None, portals=None):
+    def __init__(self, jobs=None, exclude_words=None, location=None, portals=None):
 
         # App attributes
         self.conn = None
@@ -16,6 +16,9 @@ class Database:
 
         if jobs:
             self.set_jobs(jobs)
+
+        if exclude_words:
+            self.set_exclude_words(exclude_words)
 
         if location:
             self.set_location(location)
@@ -36,18 +39,27 @@ class Database:
         self.curs.execute("CREATE TABLE IF NOT EXISTS regiok (regio TEXT)")
         self.curs.execute("CREATE TABLE IF NOT EXISTS preferalt_portalok (portal TEXT)")
         self.curs.execute("CREATE TABLE IF NOT EXISTS tamogatott_portalok (portal TEXT)")
+        self.curs.execute("CREATE TABLE IF NOT EXISTS kizart_kulcsszavak (szo TEXT)")
 
     def get_searched_jobs_from_db(self):
         self.curs.execute("SELECT allas FROM keresett_allasok")
         return [job[0] for job in self.curs.fetchall()]
 
+    def get_exclude_words_from_db(self):
+        self.curs.execute("SELECT szo FROM kizart_kulcsszavak")
+        return [word[0] for word in self.curs.fetchall()]
+
     def get_searched_jobs_from_db_str(self):
         return ", ".join(self.get_searched_jobs_from_db()).strip()
+
+    def get_exclude_words_from_db_str(self):
+        return ", ".join(self.get_exclude_words_from_db()).strip()
 
     def clear_tables(self):
         self.curs.execute("DELETE FROM keresett_allasok")
         self.curs.execute("DELETE FROM preferalt_regio")
         self.curs.execute("DELETE FROM preferalt_portalok")
+        self.curs.execute("DELETE FROM kizart_kulcsszavak")
 
     def set_jobs(self, jobs):
         self.clear_tables()
@@ -56,6 +68,13 @@ class Database:
             job = job.lower().strip()
             if job not in self.get_searched_jobs_from_db():
                 self.curs.execute(f"INSERT INTO keresett_allasok VALUES ('{job}')")
+        self.conn.commit()
+
+    def set_exclude_words(self, words):
+        for word in words:
+            word = word.lower().strip()
+            if word not in self.get_exclude_words_from_db():
+                self.curs.execute(f"INSERT INTO kizart_kulcsszavak VALUES ('{word}')")
         self.conn.commit()
 
     def set_location(self, location):
@@ -93,7 +112,7 @@ class Database:
     def set_supported_portals(self):
         supported_portals = ["Mindegyik/egyik sem",
                              "Profession (profession.hu)",
-                             "Evosoft (evosoft.hu)",
+                             # "Evosoft (evosoft.hu)",
                              "Bosch (bosch.hu)",
                              "Állás.Club (allas.club)",
                              "Virtuális Munkaerőpiac Portál (vmp.munka.hu)",

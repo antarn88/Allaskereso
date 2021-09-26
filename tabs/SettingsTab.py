@@ -36,8 +36,20 @@ class SettingsTab(QWidget):
         self.keywords_input.setToolTip("Ha üresen hagyod, az összes állás megjelenik")
         keywords_box_layout.addWidget(self.keywords_input)
 
+        self.exclude_words_box = QGroupBox("Kulcsszavak kizárása (vesszővel elválasztva):")
+        main_layout.addWidget(self.exclude_words_box, 1, 0)
+        exclude_words_box_layout = QGridLayout()
+        exclude_words_box_layout.setContentsMargins(50, 10, 50, 10)
+        exclude_words_box_layout.setHorizontalSpacing(30)
+        self.exclude_words_box.setLayout(exclude_words_box_layout)
+        self.exclude_words_input = QLineEdit()
+        self.exclude_words_input.returnPressed.connect(self.search_jobs_action)
+
+        self.exclude_words_input.setText(db.get_exclude_words_from_db_str())
+        exclude_words_box_layout.addWidget(self.exclude_words_input)
+
         self.job_locations_box = QGroupBox("Állások keresése innen:")
-        main_layout.addWidget(self.job_locations_box, 1, 0)
+        main_layout.addWidget(self.job_locations_box, 2, 0)
         job_locations_box_layout = QGridLayout()
         job_locations_box_layout.setContentsMargins(50, 10, 50, 10)
         job_locations_box_layout.setHorizontalSpacing(30)
@@ -50,7 +62,7 @@ class SettingsTab(QWidget):
         self.location_list.setCurrentText(db.get_location())
 
         self.job_search_portals_box = QGroupBox("Álláskeresési portálok:")
-        main_layout.addWidget(self.job_search_portals_box, 2, 0)
+        main_layout.addWidget(self.job_search_portals_box, 3, 0)
         job_search_portals_box_layout = QGridLayout()
         job_search_portals_box_layout.setContentsMargins(50, 10, 50, 10)
         job_search_portals_box_layout.setHorizontalSpacing(30)
@@ -70,7 +82,7 @@ class SettingsTab(QWidget):
         self.save_and_recommended_jobs_btn.clicked.connect(self.search_jobs_action)
 
         button_group.addWidget(self.save_and_recommended_jobs_btn)
-        main_layout.addLayout(button_group, 3, 0)
+        main_layout.addLayout(button_group, 4, 0)
 
     def search_jobs_action(self):
         if self.parent.has_internet_connection():
@@ -80,7 +92,12 @@ class SettingsTab(QWidget):
                 if portal_item.checkState():
                     self.selected_portals.append(portal_item.text())
             db.set_portals(self.selected_portals)
-            processed_data = InputData(self.keywords_input.text(), self.location_list.currentText(), self.selected_portals).get_processed_data()
+            processed_data = InputData(
+                self.keywords_input.text(),
+                self.exclude_words_input.text(),
+                self.location_list.currentText(),
+                self.selected_portals
+            ).get_processed_data()
             self.portal_manager = PortalManager(self, processed_data)
         else:
             PopupWindow(self, "Nincs internet kapcsolat!", "warning")

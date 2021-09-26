@@ -22,6 +22,7 @@ class BoschWorker(QThread):
 
         # Get data from user input data
         self.jobs = input_data["jobs"]
+        self.exclude_words = input_data["exclude_words"]
         self.search_location = input_data["search_location"]
 
         self.variable_page_url_changer()
@@ -63,8 +64,17 @@ class BoschWorker(QThread):
                     job_link = str(i["href"]).strip()
                     self.job.emit(get_data_dict(self.PORTAL_NAME, job, job_link))
                     for searched_job in self.jobs:
-                        if searched_job in job.lower():
-                            self.found_job.emit(get_data_dict(self.PORTAL_NAME, job, job_link))
+                        job_ok = True
+                        if self.exclude_words != ['']:
+                            for exclude_word in self.exclude_words:
+                                if exclude_word.lower() in job.lower():
+                                    job_ok = False
+                                    break
+                            if searched_job in job.lower() and job_ok:
+                                self.found_job.emit(get_data_dict(self.PORTAL_NAME, job, job_link))
+                        else:
+                            if searched_job in job.lower():
+                                self.found_job.emit(get_data_dict(self.PORTAL_NAME, job, job_link))
                 self.page_counter += 1
 
 

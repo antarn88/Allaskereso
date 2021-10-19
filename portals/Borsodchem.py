@@ -24,6 +24,7 @@ class BorsodchemWorker(QThread):
         self.PORTAL_NAME = "Borsodchem"
         self.PORTAL_URL = "https://career2.successfactors.eu/career?company=borsodchem"
         self.driver = None
+        self.job_urls = []
 
         # Get data from user input data
         self.jobs = input_data["jobs"]
@@ -36,6 +37,7 @@ class BorsodchemWorker(QThread):
                 self.prepare_selenium()
                 self.navigate_to_jobs()
                 self.get_jobs()
+                self.job_urls.clear()
         except AttributeError:
             self.error_msg.emit(self.PORTAL_NAME,
                                 "A portál forráskódjában fontos változások történtek, a program frissítésre szorul!",
@@ -76,10 +78,12 @@ class BorsodchemWorker(QThread):
                             if exclude_word.lower() in job_name.lower():
                                 job_ok = False
                                 break
-                        if searched_job in job_name.lower() and job_ok:
+                        if searched_job in job_name.lower() and job_ok and job_link not in self.job_urls:
+                            self.job_urls.append(job_link)
                             self.found_job.emit(get_data_dict(self.PORTAL_NAME, job_name, job_link))
                     else:
-                        if searched_job in job_name.lower():
+                        if searched_job in job_name.lower() and job_link not in self.job_urls:
+                            self.job_urls.append(job_link)
                             self.found_job.emit(get_data_dict(self.PORTAL_NAME, job_name, job_link))
             try:
                 self.driver.find_element_by_xpath('//a[@title="Következő oldal"]').click()

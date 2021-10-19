@@ -20,6 +20,7 @@ class ProfessionWorker(QThread):
         self.first_page_url = None
         self.variable_page_url = None
         self.page_counter = 1
+        self.job_urls = []
 
         # Get data from user input data
         self.jobs = input_data["jobs"]
@@ -31,6 +32,7 @@ class ProfessionWorker(QThread):
     def run(self):
         try:
             self.get_jobs()
+            self.job_urls.clear()
         except AttributeError:
             # For debugging
             # from traceback import print_exc
@@ -66,10 +68,12 @@ class ProfessionWorker(QThread):
                             if exclude_word.lower() in job.lower():
                                 job_ok = False
                                 break
-                        if searched_job in job.lower() and job_ok:
+                        if searched_job in job.lower() and job_ok and job_link not in self.job_urls:
+                            self.job_urls.append(job_link)
                             self.found_job.emit(get_data_dict(self.PORTAL_NAME, job, job_link))
                     else:
-                        if searched_job in job.lower():
+                        if searched_job in job.lower() and job_link not in self.job_urls:
+                            self.job_urls.append(job_link)
                             self.found_job.emit(get_data_dict(self.PORTAL_NAME, job, job_link))
             self.page_counter += 1
 

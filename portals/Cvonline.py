@@ -19,6 +19,7 @@ class CvonlineWorker(QThread):
         self.PORTAL_URL = "https://www.cvonline.hu/hu"
         self.variable_page_url = None
         self.page_counter = 0
+        self.job_urls = []
 
         # Get data from user input data
         self.jobs = input_data["jobs"]
@@ -30,6 +31,7 @@ class CvonlineWorker(QThread):
     def run(self):
         try:
             self.get_jobs()
+            self.job_urls.clear()
         except AttributeError:
             # For debugging
             # from traceback import print_exc
@@ -68,10 +70,12 @@ class CvonlineWorker(QThread):
                             if exclude_word.lower() in job_name.lower():
                                 job_ok = False
                                 break
-                        if searched_job in job_name.lower() and job_ok:
+                        if searched_job in job_name.lower() and job_ok and job_link not in self.job_urls:
+                            self.job_urls.append(job_link)
                             self.found_job.emit(get_data_dict(self.PORTAL_NAME, job_name, job_link))
                     else:
-                        if searched_job in job_name.lower():
+                        if searched_job in job_name.lower() and job_link not in self.job_urls:
+                            self.job_urls.append(job_link)
                             self.found_job.emit(get_data_dict(self.PORTAL_NAME, job_name, job_link))
             self.page_counter += 1
 

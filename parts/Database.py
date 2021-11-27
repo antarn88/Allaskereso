@@ -114,7 +114,7 @@ class Database:
                              "Profession (profession.hu)",
                              # "Evosoft (evosoft.hu)",
                              "Bosch (bosch.hu)",
-                             "Állás.Club (allas.club)",
+                             # "Állás.Club (allas.club)",
                              "Virtuális Munkaerőpiac Portál (vmp.munka.hu)",
                              # "Jobmonitor (jobmonitor.hu)",
                              "ÉRV (ervzrt.hu)",
